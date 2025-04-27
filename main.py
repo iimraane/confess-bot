@@ -34,6 +34,7 @@ def save_channel_config(data: dict):
         json.dump(data, f, indent=2)
 
 async def log_to_webhook(author: str, cmd: str, content: str, response: str = ""):
+    
     """Envoie le log dans chaque salon configuré."""
     message = (
         f"Auteur : {author}\n"
@@ -134,7 +135,7 @@ async def setup_ano(ctx: commands.Context, channel: discord.TextChannel):
     save_channel_config(cfg)
 
     await ctx.send(f"✅ Salon anonyme défini : {channel.mention}")
-    log_to_webhook(ctx.author.name, "!setup", f"Channel = {channel.id}", "OK")
+    await log_to_webhook(ctx.author.name, "!setup", f"Channel = {channel.id}", "OK")
 
 @setup_ano.error
 async def setup_error(ctx: commands.Context, error):
@@ -161,7 +162,7 @@ async def anoban(ctx: commands.Context, member: discord.Member):
     save_channel_config(cfg)
 
     await ctx.send(f"🚫 {member.mention} est désormais banni des messages anonymes.")
-    log_to_webhook(ctx.author.name, "!anoban", f"User = {member.id}", "Banni")
+    await log_to_webhook(ctx.author.name, "!anoban", f"User = {member.id}", "Banni")
 
 @anoban.error
 async def anoban_error(ctx: commands.Context, error):
@@ -187,7 +188,7 @@ async def anounban(ctx: commands.Context, member: discord.Member):
     save_channel_config(cfg)
 
     await ctx.send(f"✅ {member.mention} est de nouveau autorisé à utiliser `!ano`.")
-    log_to_webhook(ctx.author.name, "!anounban", f"User = {member.id}", "Débanni")
+    await log_to_webhook(ctx.author.name, "!anounban", f"User = {member.id}", "Débanni")
 
 
 @anounban.error
@@ -209,7 +210,7 @@ async def logsetup(ctx: commands.Context, channel: discord.TextChannel):
     save_channel_config(cfg)
 
     await ctx.send(f"📜 Salon de logs défini : {channel.mention}")
-    log_to_webhook(ctx.author.name, "!logsetup", f"Channel = {channel.id}", "OK")
+    await log_to_webhook(ctx.author.name, "!logsetup", f"Channel = {channel.id}", "OK")
 
 
 @logsetup.error
@@ -234,7 +235,7 @@ async def aide(ctx: commands.Context):
         "• `!aide` : affiche ce message.\n"
     )
     await ctx.send(txt)
-    log_to_webhook(ctx.author.name, "!aide", "—", "OK")
+    await log_to_webhook(ctx.author.name, "!aide", "—", "OK")
 
 # ─────────────────────────── COMMANDE !anostop
 @bot.command()
@@ -332,7 +333,7 @@ async def ano(ctx: commands.Context):
 
         await ctx.send("✅ Ton message anonyme vient d’être publié !")
 
-        log_to_webhook(
+        await log_to_webhook(
             author=ctx.author.name,
             cmd="!ano",
             content=f"Titre: {title}\nCorps: {body}",
@@ -343,7 +344,7 @@ async def ano(ctx: commands.Context):
         await ctx.send("⌛ Temps écoulé, la procédure a été annulée.")
     except Exception as e:
         await ctx.send(f"❌ {e}")
-        log_to_webhook(ctx.author.name, "!ano", "—", f"Abandonné ({e})")
+        await log_to_webhook(ctx.author.name, "!ano", "—", f"Abandonné ({e})")
     finally:
         active_sessions.pop(ctx.author.id, None)
 
