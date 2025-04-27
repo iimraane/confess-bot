@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord.ui import View, Select, Button
 
 # ─────────────────────────── CONFIG
-TOKEN = "MTM2NTc4Njk5Mjc3MTYwMDYxNg.GguJ88.ABLryCpR7YaI-Ldy3yUZx3fAWMZCRbreSuufPU"                       # ← garde ton token en variable d’environnement !
+TOKEN = "MTM2NTc4Njk5Mjc3MTYwMDYxNg.GtxhSl.4g3KMLDEsEzQgvIgQYNifWaBU4C2NeziMyyPY8"                       # ← garde ton token en variable d’environnement !
 CHANNEL_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "db.json")
 
 intents = discord.Intents.default()
