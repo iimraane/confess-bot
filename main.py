@@ -14,10 +14,11 @@ TOKEN = "MTM2NTc4Njk5Mjc3MTYwMDYxNg.GtxhSl.4g3KMLDEsEzQgvIgQYNifWaBU4C2NeziMyyPY
 CHANNEL_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "db.json")
 
 threading.Thread(target=keep_alive.run, daemon=True).start()
-
 intents = discord.Intents.default()
 intents.message_content = True
-intents.members = True          # ← ajoute cette ligne
+intents.members = True
+intents.guilds = True          # pour être sûr que le cache des salons se peuple vite
+
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -32,24 +33,35 @@ def save_channel_config(data: dict):
     with open(CHANNEL_CONFIG_PATH, "w") as f:
         json.dump(data, f, indent=2)
 
-# ▼ remplace entièrement la fonction log_to_webhook par ceci ▼
-def log_to_webhook(author: str, cmd: str, content: str, response: str = ""):
-    """Envoie le log dans chaque salon configuré (plus de webhook externe)."""
+async def log_to_webhook(author: str, cmd: str, content: str, response: str = ""):
+    """Envoie le log dans chaque salon configuré."""
     message = (
         f"Auteur : {author}\n"
         f"Commande : {cmd}\n"
-        f"Contenu : {content}\n"
-        f"Réponse : {response}"
+        f"Contenu  : {content}\n"
+        f"Réponse  : {response}"
     )
 
     cfg = load_channel_config()
     for gid, data in cfg.items():
-        log_id = data.get("log_channel_id")
-        if log_id:
-            channel = bot.get_channel(log_id)
-            if channel:
-                # on planifie l’envoi pour ne pas bloquer la boucle
-                asyncio.create_task(channel.send(f"```log\n{message}\n```"))
+        chan_id = data.get("log_channel_id")
+        if not chan_id:
+            continue
+
+        channel = bot.get_channel(chan_id)
+        if channel is None:                # pas dans le cache ➜ on fetch
+            try:
+                channel = await bot.fetch_channel(chan_id)
+            except discord.NotFound:
+                continue        # salon supprimé ➜ on l’ignorera poliment
+            except discord.Forbidden:
+                continue        # pas la permission
+
+        try:
+            await channel.send(f"```log\n{message}\n```")
+        except discord.Forbidden:
+            pass   # permissions retirées
+
 
 
 # ─────────────────────────── VIEWS
@@ -209,7 +221,6 @@ async def logsetup_error(ctx: commands.Context, error):
 
 # ─────────────────────────── COMMANDE !aide
 @bot.command(name="aide", aliases=["commands"])
-@commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
 async def aide(ctx: commands.Context):
     """Affiche la liste des commandes disponibles."""
     txt = (
@@ -239,7 +250,6 @@ async def anostop(ctx: commands.Context):
 # ─────────────────────────── COMMANDE INTERACTIVE !ano
 @bot.command(name="ano")
 @commands.dm_only()
-@commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
 async def ano(ctx: commands.Context):
     """Création interactive d’un message anonyme."""
     # ───── Vérifie si l’utilisateur est banni d’au moins un serveur commun
