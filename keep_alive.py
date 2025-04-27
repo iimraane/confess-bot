@@ -7,5 +7,11 @@ async def ping(request):
 
 def run():
     app = web.Application()
-    app.router.add_get("/", ping)      # route GET /
-    web.run_app(app, port=int(os.environ.get("PORT", 8080)))
+    app.router.add_get("/", ping)
+
+    # ⚠️  Le paramètre handle_signals=False est indispensable
+    web.run_app(
+        app,
+        port=int(os.environ.get("PORT", 8080)),
+        handle_signals=False   # ← ICI, vraiment présent
+    )
