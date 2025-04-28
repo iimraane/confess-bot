@@ -6,14 +6,12 @@ import discord, asyncio, json, os, requests
 from discord.ext import commands
 from discord.ui import View, Select, Button
 import threading
-import keep_alive           # ← ajoute cette ligne
 
 
 # ─────────────────────────── CONFIG
 TOKEN = "MTM2NTc4Njk5Mjc3MTYwMDYxNg.GtxhSl.4g3KMLDEsEzQgvIgQYNifWaBU4C2NeziMyyPY8"                       # ← garde ton token en variable d’environnement !
 CHANNEL_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "db.json")
 
-threading.Thread(target=keep_alive.run, daemon=True).start()
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
